@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Паспорт эпохи — игра по «Евгению Онегину»</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* ... (ваши стили без изменений, они такие же как в вашем коде) ... */
+        /* ===== CSS-переменные для тем ===== */
+        :root {
+            --bg-body: #e8ddd0;
+            --bg-app: #fcf8f0;
+            --border-color: #dac9b5;
+            --text-primary: #3d2a1a;
+            --text-secondary: #7a624a;
+            --text-dark: #2d1e12;
+            --bg-header: #e5d7c6;
+            --bg-round: #dac9b5;
+            --bg-option: #f5efe8;
+            --bg-option-hover: #e5d7c6;
+            --bg-correct: #b8d9b8;
+            --border-correct: #4f7a4f;
+            --bg-wrong: #ecc4c4;
+            --border-wrong: #a84f4f;
+            --shadow: rgba(60, 40, 20, 0.2);
+            --btn-primary: #8b7355;
+            --btn-primary-hover: #6d5a42;
+            --btn-cert: #3d2a1a;
+            --btn-cert-hover: #5a3f2b;
+            --footer-text: #7a624a;
+            --highlight-color: #8b5a3a;
+        }
+        [data-theme="night"] {
+            --bg-body: #1a1a2e;
+            --bg-app: #2a2a40;
+            --border-color: #5a5a7a;
+            --text-primary: #e0dcd0;
+            --text-secondary: #b0a8a0;
+            --text-dark: #d0c8b8;
+            --bg-header: #3a3a55;
+            --bg-round: #4a4a6a;
+            --bg-option: #3a3a55;
+            --bg-option-hover: #4a4a6a;
+            --bg-correct: #4a7a5a;
+            --border-correct: #6a9a7a;
+            --bg-wrong: #7a4a4a;
+            --border-wrong: #a85a5a;
+            --btn-primary: #5a5a7a;
+            --btn-primary-hover: #6a6a8a;
+            --btn-cert: #8a7a6a;
+            --btn-cert-hover: #aa9a8a;
+            --highlight-color: #d4b08c;
+            --shadow: rgba(0, 0, 0, 0.5);
+            --footer-text: #b0a8a0;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: var(--bg-body);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.3s, color 0.3s;
+        }
+        #app {
+            max-width: 800px;
+            width: 100%;
+            background: var(--bg-app);
+            border-radius: 32px;
+            padding: 28px 24px 24px;
+            box-shadow: 0 12px 40px var(--shadow);
+            border: 1px solid var(--border-color);
+            position: relative;
+            transition: background 0.3s, border-color 0.3s, box-shadow 0.3s;
+        }
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .game-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: 0.3px;
+            transition: color 0.3s;
+        }
+        .game-title small {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .score-box {
+            background: var(--bg-header);
+            padding: 4px 16px;
+            border-radius: 40px;
+            font-size: 17px;
+            color: var(--text-primary);
+            font-weight: 600;
+            transition: background 0.3s, color 0.3s;
+        }
+        .theme-switcher { display: flex; gap: 6px; }
+        .theme-btn {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .theme-btn:hover { transform: scale(1.1); }
+        .theme-btn.active {
+            border-color: var(--highlight-color);
+            box-shadow: 0 0 0 2px var(--highlight-color);
+        }
+        .player-name-badge {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-left: 10px;
+        }
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .progress-bar span:last-child {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .round-label {
+            display: inline-block;
+            background: var(--bg-round);
+            padding: 4px 18px;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 14px;
+            letter-spacing: 0.3px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .question-text {
+            font-size: 22px;
+            line-height: 1.4;
+            margin: 6px 0 20px;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        .question-image {
+            text-align: center;
+            margin: 10px 0;
+            font-size: 80px;
+            line-height: 1.2;
+            background: var(--bg-option);
+            padding: 20px;
+            border-radius: 20px;
+            border: 2px dashed var(--border-color);
+        }
+        .question-image img {
+            max-width: 70%;
+            max-height: 400px;
+        }
+        .match-container {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .match-column { flex: 1; min-width: 180px; }
+        .match-column h3 {
+            font-size: 18px;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .match-item {
+            background: var(--bg-option);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            font-size: 17px;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+            user-select: none;
+            color: var(--text-dark);
+        }
+        .match-item:hover:not(.matched):not(.disabled) {
+            background: var(--bg-option-hover);
+            border-color: var(--border-color);
+        }
+        .match-item.selected {
+            border-color: var(--highlight-color);
+            background: var(--bg-round);
+            box-shadow: 0 0 0 3px var(--highlight-color);
+        }
+        .match-item.matched {
+            background: var(--bg-correct);
+            border-color: var(--border-correct);
+            cursor: default;
+            opacity: 0.7;
+        }
+        .match-item.wrong {
+            background: var(--bg-wrong);
+            border-color: var(--border-wrong);
+            animation: shake 0.3s;
+        }
+        .match-item.disabled { pointer-events: none; opacity: 0.5; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .match-feedback { text-align: center; margin: 10px 0; font-size: 18px; font-weight: 600; min-height: 30px; }
+        .match-feedback.error { color: var(--border-wrong); }
+        .match-feedback.success { color: var(--border-correct); }
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin: 20px 0;
+        }
+        @media (max-width: 500px) { .options-grid { grid-template-columns: 1fr; } }
+        .option-btn {
+            background: var(--bg-option);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px 12px;
+            font-size: 18px;
+            font-family: 'Georgia', serif;
+            color: var(--text-dark);
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        }
+        .option-btn:hover:not(:disabled) {
+            background: var(--bg-option-hover);
+            border-color: var(--border-color);
+            transform: translateY(-2px);
+        }
+        .option-btn:disabled { cursor: default; opacity: 0.8; }
+        .option-btn.correct {
+            background: var(--bg-correct);
+            border-color: var(--border-correct);
+            color: var(--text-dark);
+        }
+        .option-btn.wrong {
+            background: var(--bg-wrong);
+            border-color: var(--border-wrong);
+            color: var(--text-dark);
+        }
+        .choice-feedback { margin: 10px 0; font-size: 18px; font-weight: 600; min-height: 30px; }
+        .choice-feedback.error { color: var(--border-wrong); }
+        .choice-feedback.success { color: var(--border-correct); }
+        .btn-next {
+            background: var(--btn-primary);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .btn-next:hover:not(:disabled) { background: var(--btn-primary-hover); }
+        .btn-next:disabled { opacity: 0.5; cursor: default; }
+        .btn-restart {
+            background: var(--btn-primary);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 20px;
+        }
+        .btn-restart:hover { background: var(--btn-primary-hover); }
+        .btn-cert {
+            background: var(--btn-cert);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            transition: 0.2s;
+            margin: 8px 4px;
+        }
+        .btn-cert:hover { background: var(--btn-cert-hover); }
+        .hidden { display: none !important; }
+        #start-screen { text-align: center; padding: 30px 10px; }
+        #start-screen h1 { font-size: 36px; color: var(--text-primary); margin-bottom: 10px; }
+        #start-screen p { font-size: 18px; color: var(--text-secondary); margin-bottom: 20px; }
+        #start-screen label { font-size: 20px; display: block; margin-bottom: 8px; color: var(--text-primary); }
+        #start-screen input {
+            font-size: 20px;
+            padding: 10px 16px;
+            width: 80%;
+            max-width: 400px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-app);
+            font-family: 'Georgia', serif;
+            text-align: center;
+            color: var(--text-dark);
+        }
+        #start-screen .btn-start {
+            background: var(--btn-cert);
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            border-radius: 40px;
+            font-size: 22px;
+            font-family: 'Georgia', serif;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.2s;
+        }
+        #start-screen .btn-start:hover { background: var(--btn-cert-hover); }
+        #final-screen { text-align: center; }
+        #final-screen .final-score { font-size: 26px; margin: 16px 0; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin: 16px 0;
+            font-size: 18px;
+        }
+        .stats-grid div {
+            background: var(--bg-option);
+            padding: 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .word-checklist {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 20px;
+            text-align: left;
+            margin: 16px 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .word-checklist label {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: var(--text-dark);
+        }
+        .word-checklist input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--btn-cert); }
+        #certificate-area { margin-top: 25px; }
+        #certificate {
+            background: var(--bg-app);
+            border: 3px double var(--border-color);
+            border-radius: 20px;
+            padding: 24px 20px;
+            margin: 12px 0;
+            text-align: left;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        #certificate h2 {
+            text-align: center;
+            color: var(--text-primary);
+            border-bottom: 2px dashed var(--border-color);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        #certificate ul { list-style: none; padding: 0; }
+        #certificate ul li {
+            padding: 6px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 18px;
+            color: var(--text-dark);
+        }
+        .fade-in { animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(8px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .quote-block {
+            background: var(--bg-option);
+            padding: 14px 20px;
+            border-radius: 14px;
+            border-left: 6px solid var(--highlight-color);
+            margin: 10px 0 20px;
+            font-style: italic;
+            font-size: 19px;
+            color: var(--text-dark);
+        }
+        .quote-block .word-highlight {
+            font-weight: 700;
+            color: var(--highlight-color);
+            text-decoration: underline;
+        }
+        .flex-center { display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .mt-10 { margin-top: 10px; }
+        .mt-20 { margin-top: 20px; }
+        .game-footer {
+            margin-top: 25px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            font-size: 14px;
+            color: var(--footer-text);
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .game-footer a { color: var(--text-secondary); text-decoration: none; }
+        .game-footer a:hover { text-decoration: underline; }
+        .save-indicator { font-size: 13px; color: var(--text-secondary); margin-left: 10px; opacity: 0.7; }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="game-header">
+        <div class="game-title">
+            📜 Паспорт эпохи
+            <small>по «Евгению Онегину»</small>
+        </div>
+        <div class="header-right">
+            <div class="score-box">
+                🏆 <span id="scoreDisplay">0</span>
+                <span id="playerNameDisplay" class="player-name-badge"></span>
+                <button class="theme-btn" id="changePlayerBtn" title="Сменить игрока">👤</button>
+            </div>
+            <div class="theme-switcher">
+                <button class="theme-btn active" data-theme="classic" title="Классическая">🌿</button>
+                <button class="theme-btn" data-theme="night" title="Ночная">🌙</button>
+            </div>
+        </div>
+    </div>
+    <div id="game-container"></div>
+    <div class="game-footer">
+        Разработчик: <strong>Светлая Полина Николаевна</strong> &bull;
+        <span id="footerYear">2026</span>
+        <span id="saveIndicator" class="save-indicator"></span>
+    </div>
+</div>
+
+<script>
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 0. ЗВУКИ
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    function playSound(freq, duration = 200, type = 'sine') {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = type;
+            osc.frequency.value = freq;
+            gain.gain.value = 0.15;
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start();
+            setTimeout(() => { osc.stop(); ctx.close(); }, duration);
+        } catch(e) {}
+    }
+    function soundCorrect() { playSound(600, 150); }
+    function soundWrong() { playSound(300, 300, 'sawtooth'); }
+    function soundNext() { playSound(800, 100); }
+    function soundFinish() { playSound(1000, 200); setTimeout(() => playSound(1200, 200), 200); }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 1. ДАННЫЕ ИГРЫ
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    const wordIcons = {
+        'боливар': '🎩', 'панталоны': '👖', 'фрак': '🧥', 'шлафор': '👘', 'чепец': '👒',
+        'картуз': '🧢', 'кафтан': '🧥', 'брегет': '⌚', 'лорнет': '🔍', 'гребёнки': '🪥',
+        'страсбургский пирог': '🥧', 'брусничная вода': '🍹', 'лимбургский сыр': '🧀',
+        'блан-манже': '🍮', 'цимлянское': '🍾', 'ямская карета': '🚐', 'ямщик': '🐴',
+        'прогоны': '💰', 'кибитка': '🚌', 'биржа': '🏛️', 'дрожжи': '🚗', 'дровни': '🛷',
+        'облучок': '🪑', 'почтовые': '🐎', 'бричка': '🚲', 'возок': '🛺',
+        'Онегин': '🧑‍🎨', 'Ленский': '🧑‍🎓', 'Татьяна': '👩', 'Ольга': '👩',
+        'Петербург': '🏛️', 'Москва': '🏰', 'деревня': '🌾', 'бал': '💃', 'дуэль': '⚔️',
+        'почтовая станция': '🏤'
+    };
+
+    const allWordsList = [
+        'боливар', 'панталоны', 'фрак', 'шлафор', 'чепец',
+        'картуз', 'кафтан', 'брегет', 'лорнет', 'гребёнки',
+        'страсбургский пирог', 'брусничная вода', 'лимбургский сыр', 'блан-манже', 'цимлянское',
+        'ямская карета', 'ямщик', 'прогоны', 'кибитка', 'биржа',
+        'дрожжи', 'дровни', 'облучок', 'почтовые', 'бричка', 'возок'
+    ];
+
+    const tasks = [
+        // ===== Раунд 1: Одежда =====
+        {
+            round: 'Одежда и аксессуары',
+            type: 'match',
+            pairs: [
+                { word: 'боливар', value: 'шляпа-цилиндр с широкими полями' },
+                { word: 'фрак', value: 'парадная мужская одежда' },
+                { word: 'шлафор', value: 'просторный домашний халат на вате' },
+                { word: 'панталоны', value: 'мужские брюки' }
+            ],
+            icon: '👔'
+        },
+        {
+            round: 'Одежда и аксессуары',
+            type: 'choice',
+            question: 'Что означает слово «гребёнки»?',
+            options: [
+                'предмет для расчёсывания волос',
+                'переднее сиденье в повозке',
+                'платный городской экипаж',
+                'крытая дорожная повозка'
+            ],
+            correct: 0,
+            icon: '🪥'
+        },
+        {
+            round: 'Одежда и аксессуары',
+            type: 'match',
+            pairs: [
+                { word: 'картуз', value: 'мужская фуражка с козырьком' },
+                { word: 'брегет', value: 'дорогие карманные часы с боем' },
+                { word: 'кафтан', value: 'старинная русская мужская долгополая верхняя одежда' },
+                { word: 'лорнет', value: 'складные очки на ручке' }
+            ],
+            icon: '⌚'
+        },
+        {
+            round: 'Одежда и аксессуары',
+            type: 'fill',
+            question: '«Надев широкий ____, Онегин едет на бульвар»',
+            options: ['боливар', 'картуз', 'чепец', 'фрак'],
+            correct: 0,
+            icon: '🎩'
+        },
+        {
+            round: 'Одежда и аксессуары',
+            type: 'truefalse',
+            statement: 'Чепец — это мужской головной убор.',
+            correct: false,
+            icon: '👒'
+        },
+        {
+            round: 'Одежда и аксессуары',
+            type: 'image',
+            image: 'image.png',
+            question: 'Какой предмет одежды изображён?',
+            options: ['фрак', 'кафтан', 'шлафор', 'панталоны'],
+            correct: 0
+        },
+        {
+            round: 'Одежда и аксессуары',
+            type: 'image',
+            image: 'image1.png',
+            question: 'Что изображено на картинке?',
+            options: ['брегет', 'лорнет', 'гребёнки', 'картуз'],
+            correct: 0
+        },
+
+        // ===== Раунд 2: Еда =====
+        {
+            round: 'Еда и напитки',
+            type: 'match',
+            pairs: [
+                { word: 'страсбургский пирог', value: 'паштет из гусиной печени' },
+                { word: 'брусничная вода', value: 'прохладительный напиток из брусники' },
+                { word: 'лимбургский сыр', value: 'мягкий сыр из Бельгии («живой»)' },
+                { word: 'блан-манже', value: 'десерт из миндального молока с желатином' }
+            ],
+            icon: '🍽️'
+        },
+        {
+            round: 'Еда и напитки',
+            type: 'choice',
+            question: 'Что означает «цимлянское»?',
+            options: [
+                'игристое вино из Цимлянска',
+                'прохладительный напиток из брусники',
+                'десерт из миндального молока',
+                'паштет из гусиной печени'
+            ],
+            correct: 0,
+            icon: '🍾'
+        },
+        {
+            round: 'Еда и напитки',
+            type: 'fill',
+            question: '«Меж сыром ____ живым и ананасом золотым»',
+            options: ['лимбургским', 'страсбургским', 'блан-манже', 'цимлянским'],
+            correct: 0,
+            icon: '🧀'
+        },
+        {
+            round: 'Еда и напитки',
+            type: 'image',
+            image: 'image2.png',
+            question: 'Что это за блюдо?',
+            options: ['страсбургский пирог', 'блан-манже', 'лимбургский сыр', 'брусничная вода'],
+            correct: 0
+        },
+
+        // ===== Раунд 3: Транспорт =====
+        {
+            round: 'Транспорт и средства передвижения',
+            type: 'match',
+            pairs: [
+                { word: 'ямская карета', value: 'платный городской экипаж' },
+                { word: 'ямщик', value: 'возница, погонщик почтовых лошадей' },
+                { word: 'прогоны', value: 'плата за пользование почтовыми лошадьми' },
+                { word: 'кибитка', value: 'крытая дорожная повозка' }
+            ],
+            icon: '🚐'
+        },
+        {
+            round: 'Транспорт и средства передвижения',
+            type: 'choice',
+            question: 'Что означает «биржа»?',
+            options: [
+                'уличная стоянка извозчиков',
+                'платный городской экипаж',
+                'крытая дорожная повозка',
+                'возница, погонщик лошадей'
+            ],
+            correct: 0,
+            icon: '🏛️'
+        },
+        {
+            round: 'Транспорт и средства передвижения',
+            type: 'match',
+            pairs: [
+                { word: 'дрожжи', value: 'лёгкий открытый экипаж' },
+                { word: 'дровни', value: 'крестьянские сани без кузова' },
+                { word: 'облучок', value: 'переднее сиденье в повозке для кучера' },
+                { word: 'почтовые', value: 'лошади, которых меняли на станциях' }
+            ],
+            icon: '🛷'
+        },
+        {
+            round: 'Транспорт и средства передвижения',
+            type: 'choice',
+            question: 'Что означает «бричка»?',
+            options: [
+                'лёгкая повозка, иногда с откидным верхом',
+                'складные очки на ручке',
+                'паштет из гусиной печени',
+                'широкий пояс из ткани'
+            ],
+            correct: 0,
+            icon: '🚲'
+        },
+        {
+            round: 'Транспорт и средства передвижения',
+            type: 'truefalse',
+            statement: 'Возок — это зимняя крытая повозка.',
+            correct: true,
+            icon: '🛺'
+        },
+        {
+            round: 'Транспорт и средства передвижения',
+            type: 'image',
+            image: 'image3.png',
+            question: 'Кто изображён?',
+            options: ['ямщик', 'извозчик', 'почтовый', 'кучер'],
+            correct: 0
+        },
+        {
+            round: 'Транспорт и средства передвижения',
+            type: 'image',
+            image: 'image4.png',   // ← ИСПРАВЛЕНО: только одно поле image
+            question: 'Какое средство передвижения изображено?',
+            options: ['кибитка', 'карета', 'дрожжи', 'возок'],
+            correct: 0
+        },
+
+        // ===== Раунд 4: Герои =====
+        {
+            round: 'Герои и персонажи',
+            type: 'choice',
+            question: 'Кто из героев романа носил «боливар»?',
+            options: ['Онегин', 'Ленский', 'Пушкин', 'Зарецкий'],
+            correct: 0,
+            icon: '🧑‍🎨'
+        },
+        {
+            round: 'Герои и персонажи',
+            type: 'fill',
+            question: '«В своей одежде был ____, И, наконец, переоделся» (о Ленском)',
+            options: ['небрежен', 'педант', 'романтик', 'философ'],
+            correct: 0,
+            icon: '🧑‍🎓'
+        },
+        {
+            round: 'Герои и персонажи',
+            type: 'truefalse',
+            statement: 'Татьяна Ларина — младшая сестра Ольги.',
+            correct: false,
+            icon: '👩'
+        },
+
+        // ===== Раунд 5: География =====
+        {
+            round: 'География и места',
+            type: 'choice',
+            question: 'Где происходит действие первой главы романа?',
+            options: ['Петербург', 'Москва', 'Деревня', 'Киев'],
+            correct: 0,
+            icon: '🏛️'
+        },
+        {
+            round: 'География и места',
+            type: 'fill',
+            question: '«В ____, в ____, в ____ и в санях» (перечисление мест)',
+            options: ['кибитках', 'бричках', 'возках', 'каретах'],
+            correct: 0,
+            icon: '🚌'
+        },
+        {
+            round: 'География и места',
+            type: 'truefalse',
+            statement: 'Ларины жили в Москве.',
+            correct: false,
+            icon: '🌾'
+        },
+
+        // ===== Раунд 6: Быт =====
+        {
+            round: 'Быт и обычаи',
+            type: 'choice',
+            question: 'Что такое «дуэль» в романе?',
+            options: ['поединок с оружием', 'бал', 'охота', 'карточная игра'],
+            correct: 0,
+            icon: '⚔️'
+        },
+        {
+            round: 'Быт и обычаи',
+            type: 'fill',
+            question: '«И гости съехались в ____, В кибитках, в бричках и в санях»',
+            options: ['возках', 'каретах', 'дрожках', 'кибитках'],
+            correct: 0,
+            icon: '🏤'
+        },
+        {
+            round: 'Быт и обычаи',
+            type: 'truefalse',
+            statement: 'На балах танцевали только мазурку.',
+            correct: false,
+            icon: '💃'
+        }
+    ];
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 2. СОСТОЯНИЕ И СОХРАНЕНИЕ
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    const STORAGE_KEY = 'pasport_epochi_save';
+
+    let state = {
+        currentTask: 0,
+        score: 0,
+        gameStarted: false,
+        playerName: '',
+        correctCount: 0,
+        wrongCount: 0,
+        matchPairs: [],
+        matchSelected: null,
+        taskCompleted: false
+    };
+
+    function saveState() {
+        try {
+            const data = {
+                currentTask: state.currentTask,
+                score: state.score,
+                gameStarted: state.gameStarted,
+                playerName: state.playerName,
+                correctCount: state.correctCount,
+                wrongCount: state.wrongCount,
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            document.getElementById('saveIndicator').textContent = '';
+        } catch(e) {}
+    }
+
+    function loadState() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return false;
+            const data = JSON.parse(raw);
+            state.currentTask = data.currentTask || 0;
+            state.score = data.score || 0;
+            state.gameStarted = data.gameStarted || false;
+            state.playerName = data.playerName || '';
+            state.correctCount = data.correctCount || 0;
+            state.wrongCount = data.wrongCount || 0;
+            state.matchPairs = [];
+            state.matchSelected = null;
+            state.taskCompleted = false;
+            return true;
+        } catch(e) { return false; }
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 3. ИНИЦИАЛИЗАЦИЯ
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    const container = document.getElementById('game-container');
+    const scoreSpan = document.getElementById('scoreDisplay');
+    const playerNameSpan = document.getElementById('playerNameDisplay');
+
+    function updateUI() {
+        scoreSpan.textContent = state.score;
+        if (state.playerName) {
+            playerNameSpan.textContent = '👤 ' + state.playerName;
+        } else {
+            playerNameSpan.textContent = '';
+        }
+        saveState();
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 4. ТЕМЫ
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme === 'classic' ? '' : theme);
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.theme === theme);
+        });
+        localStorage.setItem('pasport_epochi_theme', theme);
+    }
+    const savedTheme = localStorage.getItem('pasport_epochi_theme') || 'classic';
+    setTheme(savedTheme);
+    document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+    });
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 5. КНОПКА СМЕНЫ ИГРОКА (исправлено)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    document.getElementById('changePlayerBtn').addEventListener('click', function() {
+        if (confirm('Вы действительно хотите сменить игрока? Весь прогресс будет сброшен.')) {
+            state.playerName = '';
+            state.gameStarted = false;
+            state.currentTask = 0;
+            state.score = 0;
+            state.correctCount = 0;
+            state.wrongCount = 0;
+            localStorage.removeItem(STORAGE_KEY);
+            // Показываем стартовый экран и обновляем интерфейс
+            showStartScreen();
+            updateUI();
+        }
+    });
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 6. СТАРТОВЫЙ ЭКРАН
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    function showStartScreen() {
+        let html = `
+            <div id="start-screen" class="fade-in">
+                <h1>📜 Паспорт эпохи</h1>
+                <p>Интерактивная игра по роману А.С. Пушкина «Евгений Онегин»</p>
+                <label for="playerNameInput">Введите ваше ФИО:</label>
+                <input type="text" id="playerNameInput" placeholder="Иванов Иван Иванович" value="${state.playerName}" autofocus>
+                <br>
+                <button class="btn-start" id="startGameBtn">Начать игру</button>
+                ${state.gameStarted && state.playerName ? `<p style="margin-top:12px; color:var(--text-secondary);">Продолжить игру для ${state.playerName}</p>` : ''}
+            </div>
+        `;
+        container.innerHTML = html;
+        document.getElementById('startGameBtn').addEventListener('click', function() {
+            const input = document.getElementById('playerNameInput');
+            const name = input.value.trim();
+            if (name === '') {
+                alert('Пожалуйста, введите ваше ФИО.');
+                return;
+            }
+            state.playerName = name;
+            state.gameStarted = true;
+            updateUI();
+            render();
+        });
+        document.getElementById('playerNameInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') document.getElementById('startGameBtn').click();
+        });
+        if (state.gameStarted && state.playerName) {
+            render();
+        }
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 7. ОСНОВНОЙ РЕНДЕРИНГ (все функции render… такие же)
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    function render() {
+        if (!state.gameStarted) { showStartScreen(); return; }
+        if (state.currentTask >= tasks.length) { showFinalScreen(); return; }
+        const task = tasks[state.currentTask];
+        const taskNum = state.currentTask + 1;
+        const total = tasks.length;
+        const roundName = task.round;
+        document.getElementById('saveIndicator').textContent = '💾 автосохранение';
+        switch(task.type) {
+            case 'match': renderMatch(task, taskNum, total, roundName); break;
+            case 'choice': renderChoice(task, taskNum, total, roundName); break;
+            case 'fill': renderFill(task, taskNum, total, roundName); break;
+            case 'truefalse': renderTrueFalse(task, taskNum, total, roundName); break;
+            case 'image': renderImage(task, taskNum, total, roundName); break;
+            default: container.innerHTML = '<p>Неизвестный тип задания</p>';
+        }
+        updateUI();
+    }
+
+    function getIcon(task) { return task.icon || '📖'; }
+
+    // ---- MATCH ----
+    function renderMatch(task, taskNum, total, roundName) {
+        const leftItems = shuffle([...task.pairs.map(p => p.word)]);
+        const rightItems = shuffle([...task.pairs.map(p => p.value)]);
+        state.matchPairs = task.pairs.map(p => ({ word: p.word, value: p.value, matched: false }));
+        state.matchSelected = null;
+        let html = `
+            <div class="fade-in">
+                <div class="progress-bar"><span>Задание ${taskNum} из ${total}</span><span>⚡ ${state.score} очков</span></div>
+                <div class="round-label">${roundName} · Найди пару ${getIcon(task)}</div>
+                <div class="question-text">Соедините историзм с современным значением</div>
+                <div class="match-container">
+                    <div class="match-column"><h3>ИСТОРИЗМ</h3>
+                        <div id="match-left">${leftItems.map((word, idx) => `<div class="match-item" data-side="left" data-index="${idx}" data-word="${word}">${word}</div>`).join('')}</div>
+                    </div>
+                    <div class="match-column"><h3>ЗНАЧЕНИЕ</h3>
+                        <div id="match-right">${rightItems.map((value, idx) => `<div class="match-item" data-side="right" data-index="${idx}" data-value="${value}">${value}</div>`).join('')}</div>
+                    </div>
+                </div>
+                <div id="match-feedback" class="match-feedback"></div>
+                <button id="btn-next-match" class="btn-next" disabled>Дальше</button>
+            </div>
+        `;
+        container.innerHTML = html;
+        document.querySelectorAll('#match-left .match-item, #match-right .match-item').forEach(el => el.addEventListener('click', onMatchClick));
+        state.matchFeedback = document.getElementById('match-feedback');
+        state.btnNext = document.getElementById('btn-next-match');
+        state.matchSelected = null;
+        checkMatchComplete();
+    }
+
+    function onMatchClick(e) {
+        const el = e.currentTarget;
+        if (el.classList.contains('matched') || el.classList.contains('disabled')) return;
+        const side = el.dataset.side;
+        const index = parseInt(el.dataset.index);
+        if (!state.matchSelected) {
+            if (state.matchSelected && state.matchSelected.side === side) {
+                state.matchSelected.element.classList.remove('selected');
+                state.matchSelected = null;
+                return;
+            }
+            el.classList.add('selected');
+            state.matchSelected = { side, index, element: el };
+            return;
+        }
+        const first = state.matchSelected;
+        if (first.element === el) {
+            first.element.classList.remove('selected');
+            state.matchSelected = null;
+            return;
+        }
+        if (first.side === side) {
+            first.element.classList.remove('selected');
+            el.classList.add('selected');
+            state.matchSelected = { side, index, element: el };
+            return;
+        }
+        let leftEl, rightEl;
+        if (first.side === 'left') { leftEl = first; rightEl = { side, index, element: el }; }
+        else { leftEl = { side: 'left', index: first.index, element: first.element }; rightEl = { side: 'right', index: el.dataset.index, element: el }; }
+        const word = leftEl.element.dataset.word;
+        const value = rightEl.element.dataset.value;
+        const pair = state.matchPairs.find(p => p.word === word && p.value === value);
+        const feedback = document.getElementById('match-feedback');
+        if (pair && !pair.matched) {
+            pair.matched = true;
+            leftEl.element.classList.remove('selected');
+            leftEl.element.classList.add('matched');
+            rightEl.element.classList.add('matched');
+            state.score += 10;
+            state.correctCount++;
+            soundCorrect();
+            updateUI();
+            feedback.textContent = '✅ Правильно! +10 очков';
+            feedback.className = 'match-feedback success';
+            state.matchSelected = null;
+            checkMatchComplete();
+        } else {
+            state.wrongCount++;
+            soundWrong();
+            feedback.textContent = '❌ Неверно, попробуйте еще раз.';
+            feedback.className = 'match-feedback error';
+            leftEl.element.classList.add('wrong');
+            rightEl.element.classList.add('wrong');
+            setTimeout(() => {
+                leftEl.element.classList.remove('wrong');
+                rightEl.element.classList.remove('wrong');
+            }, 400);
+            leftEl.element.classList.remove('selected');
+            if (rightEl.element !== first.element) rightEl.element.classList.remove('selected');
+            state.matchSelected = null;
+        }
+        updateUI();
+    }
+
+    function checkMatchComplete() {
+        const allMatched = state.matchPairs.every(p => p.matched);
+        if (allMatched) {
+            document.getElementById('btn-next-match').disabled = false;
+            document.getElementById('match-feedback').textContent = '🎉 Все пары собраны! Нажмите "Дальше".';
+            document.getElementById('match-feedback').className = 'match-feedback success';
+            soundFinish();
+            document.getElementById('btn-next-match').addEventListener('click', function() {
+                soundNext();
+                state.currentTask++;
+                render();
+            }, { once: true });
+        } else {
+            document.getElementById('btn-next-match').disabled = true;
+        }
+    }
+
+    // ---- CHOICE ----
+    function renderChoice(task, taskNum, total, roundName) {
+        const options = shuffle([...task.options]);
+        const correctIndex = options.indexOf(task.options[task.correct]);
+        let html = `
+            <div class="fade-in">
+                <div class="progress-bar"><span>Задание ${taskNum} из ${total}</span><span>⚡ ${state.score} очков</span></div>
+                <div class="round-label">${roundName} · Выбери значение ${getIcon(task)}</div>
+                <div class="question-text">${task.question}</div>
+                <div class="options-grid" id="choice-options">${options.map((opt, idx) => `<button class="option-btn" data-index="${idx}" data-correct="${idx === correctIndex}">${opt}</button>`).join('')}</div>
+                <div id="choice-feedback" class="choice-feedback"></div>
+                <button id="btn-next-choice" class="btn-next" disabled>Дальше</button>
+            </div>
+        `;
+        container.innerHTML = html;
+        const buttons = document.querySelectorAll('#choice-options .option-btn');
+        let answered = false;
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (answered) return;
+                answered = true;
+                const isCorrect = this.dataset.correct === 'true';
+                const feedback = document.getElementById('choice-feedback');
+                const nextBtn = document.getElementById('btn-next-choice');
+                buttons.forEach(b => b.disabled = true);
+                if (isCorrect) {
+                    this.classList.add('correct');
+                    state.score += 20;
+                    state.correctCount++;
+                    soundCorrect();
+                    feedback.textContent = '✅ Правильно! +20 очков';
+                    feedback.className = 'choice-feedback success';
+                } else {
+                    this.classList.add('wrong');
+                    state.wrongCount++;
+                    soundWrong();
+                    buttons.forEach(b => { if (b.dataset.correct === 'true') b.classList.add('correct'); });
+                    feedback.textContent = '❌ Неверно. Правильный ответ: ' + task.options[task.correct];
+                    feedback.className = 'choice-feedback error';
+                }
+                updateUI();
+                nextBtn.disabled = false;
+                nextBtn.addEventListener('click', function() { soundNext(); state.currentTask++; render(); }, { once: true });
+            });
+        });
+    }
+
+    // ---- FILL ----
+    function renderFill(task, taskNum, total, roundName) {
+        const options = shuffle([...task.options]);
+        const correctIndex = options.indexOf(task.options[task.correct]);
+        let html = `
+            <div class="fade-in">
+                <div class="progress-bar"><span>Задание ${taskNum} из ${total}</span><span>⚡ ${state.score} очков</span></div>
+                <div class="round-label">${roundName} · Вставь слово ${getIcon(task)}</div>
+                <div class="question-text">${task.question}</div>
+                <div class="options-grid" id="fill-options">${options.map((opt, idx) => `<button class="option-btn" data-index="${idx}" data-correct="${idx === correctIndex}">${opt}</button>`).join('')}</div>
+                <div id="fill-feedback" class="choice-feedback"></div>
+                <button id="btn-next-fill" class="btn-next" disabled>Дальше</button>
+            </div>
+        `;
+        container.innerHTML = html;
+        const buttons = document.querySelectorAll('#fill-options .option-btn');
+        let answered = false;
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (answered) return;
+                answered = true;
+                const isCorrect = this.dataset.correct === 'true';
+                const feedback = document.getElementById('fill-feedback');
+                const nextBtn = document.getElementById('btn-next-fill');
+                buttons.forEach(b => b.disabled = true);
+                if (isCorrect) {
+                    this.classList.add('correct');
+                    state.score += 15;
+                    state.correctCount++;
+                    soundCorrect();
+                    feedback.textContent = '✅ Правильно! +15 очков';
+                    feedback.className = 'choice-feedback success';
+                } else {
+                    this.classList.add('wrong');
+                    state.wrongCount++;
+                    soundWrong();
+                    buttons.forEach(b => { if (b.dataset.correct === 'true') b.classList.add('correct'); });
+                    feedback.textContent = '❌ Неверно. Правильный ответ: ' + task.options[task.correct];
+                    feedback.className = 'choice-feedback error';
+                }
+                updateUI();
+                nextBtn.disabled = false;
+                nextBtn.addEventListener('click', function() { soundNext(); state.currentTask++; render(); }, { once: true });
+            });
+        });
+    }
+
+    // ---- TRUEFALSE ----
+    function renderTrueFalse(task, taskNum, total, roundName) {
+        const options = ['Верно', 'Неверно'];
+        const correctIndex = task.correct ? 0 : 1;
+        let html = `
+            <div class="fade-in">
+                <div class="progress-bar"><span>Задание ${taskNum} из ${total}</span><span>⚡ ${state.score} очков</span></div>
+                <div class="round-label">${roundName} · Верно/Неверно ${getIcon(task)}</div>
+                <div class="question-text">${task.statement}</div>
+                <div class="options-grid" id="tf-options">${options.map((opt, idx) => `<button class="option-btn" data-index="${idx}" data-correct="${idx === correctIndex}">${opt}</button>`).join('')}</div>
+                <div id="tf-feedback" class="choice-feedback"></div>
+                <button id="btn-next-tf" class="btn-next" disabled>Дальше</button>
+            </div>
+        `;
+        container.innerHTML = html;
+        const buttons = document.querySelectorAll('#tf-options .option-btn');
+        let answered = false;
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (answered) return;
+                answered = true;
+                const isCorrect = this.dataset.correct === 'true';
+                const feedback = document.getElementById('tf-feedback');
+                const nextBtn = document.getElementById('btn-next-tf');
+                buttons.forEach(b => b.disabled = true);
+                if (isCorrect) {
+                    this.classList.add('correct');
+                    state.score += 10;
+                    state.correctCount++;
+                    soundCorrect();
+                    feedback.textContent = '✅ Правильно! +10 очков';
+                    feedback.className = 'choice-feedback success';
+                } else {
+                    this.classList.add('wrong');
+                    state.wrongCount++;
+                    soundWrong();
+                    buttons.forEach(b => { if (b.dataset.correct === 'true') b.classList.add('correct'); });
+                    const correctText = task.correct ? 'Верно' : 'Неверно';
+                    feedback.textContent = '❌ Неверно. Правильный ответ: ' + correctText;
+                    feedback.className = 'choice-feedback error';
+                }
+                updateUI();
+                nextBtn.disabled = false;
+                nextBtn.addEventListener('click', function() { soundNext(); state.currentTask++; render(); }, { once: true });
+            });
+        });
+    }
+
+    // ---- IMAGE ----
+    function renderImage(task, taskNum, total, roundName) {
+        const options = shuffle([...task.options]);
+        const correctIndex = options.indexOf(task.options[task.correct]);
+        let imageHtml;
+        const imageStr = task.image;
+        if (typeof imageStr === 'string' && (
+            imageStr.startsWith('http://') ||
+            imageStr.startsWith('https://') ||
+            /\.(png|jpg|jpeg|gif|svg|webp)$/i.test(imageStr)
+        )) {
+            imageHtml = `<img src="${imageStr}" alt="Изображение" loading="lazy">`;
+        } else {
+            imageHtml = `<span class="emoji-only">${imageStr}</span>`;
+        }
+        let html = `
+            <div class="fade-in">
+                <div class="progress-bar"><span>Задание ${taskNum} из ${total}</span><span>⚡ ${state.score} очков</span></div>
+                <div class="round-label">${roundName} · Угадай по фото ${getIcon(task)}</div>
+                <div class="question-image">${imageHtml}</div>
+                <div class="question-text">${task.question}</div>
+                <div class="options-grid" id="image-options">${options.map((opt, idx) => `<button class="option-btn" data-index="${idx}" data-correct="${idx === correctIndex}">${opt}</button>`).join('')}</div>
+                <div id="image-feedback" class="choice-feedback"></div>
+                <button id="btn-next-image" class="btn-next" disabled>Дальше</button>
+            </div>
+        `;
+        container.innerHTML = html;
+        const buttons = document.querySelectorAll('#image-options .option-btn');
+        let answered = false;
+        buttons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (answered) return;
+                answered = true;
+                const isCorrect = this.dataset.correct === 'true';
+                const feedback = document.getElementById('image-feedback');
+                const nextBtn = document.getElementById('btn-next-image');
+                buttons.forEach(b => b.disabled = true);
+                if (isCorrect) {
+                    this.classList.add('correct');
+                    state.score += 15;
+                    state.correctCount++;
+                    soundCorrect();
+                    feedback.textContent = '✅ Правильно! +15 очков';
+                    feedback.className = 'choice-feedback success';
+                } else {
+                    this.classList.add('wrong');
+                    state.wrongCount++;
+                    soundWrong();
+                    buttons.forEach(b => { if (b.dataset.correct === 'true') b.classList.add('correct'); });
+                    feedback.textContent = '❌ Неверно. Правильный ответ: ' + task.options[task.correct];
+                    feedback.className = 'choice-feedback error';
+                }
+                updateUI();
+                nextBtn.disabled = false;
+                nextBtn.addEventListener('click', function() { soundNext(); state.currentTask++; render(); }, { once: true });
+            });
+        });
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 8. ФИНАЛЬНЫЙ ЭКРАН
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    function showFinalScreen() {
+        const totalPossible = tasks.reduce((sum, t) => {
+            if (t.type === 'match') return sum + t.pairs.length * 10;
+            else if (t.type === 'choice') return sum + 20;
+            else if (t.type === 'fill') return sum + 15;
+            else if (t.type === 'truefalse') return sum + 10;
+            else if (t.type === 'image') return sum + 15;
+            return sum;
+        }, 0);
+        const totalAttempts = state.correctCount + state.wrongCount;
+        const accuracy = totalAttempts > 0 ? Math.round((state.correctCount / totalAttempts) * 100) : 0;
+        let html = `
+            <div id="final-screen" class="fade-in">
+                <h2 style="color:var(--text-primary);">🎉 Игра завершена!</h2>
+                <div class="final-score">
+                    Игрок: <strong>${state.playerName}</strong><br>
+                    Итоговый счёт: <strong>${state.score}</strong> из ${totalPossible}
+                </div>
+                <div class="stats-grid">
+                    <div>✅ Правильно: ${state.correctCount}</div>
+                    <div>❌ Неправильно: ${state.wrongCount}</div>
+                    <div>🎯 Точность: ${accuracy}%</div>
+                </div>
+                <p style="font-size:18px; margin-top:10px;">Выберите <strong>5</strong> самых интересных слов для «Паспорта эпохи»:</p>
+                <form id="word-select-form">
+                    <div class="word-checklist">
+                        ${allWordsList.map(w => `<label><input type="checkbox" name="word" value="${w}"> ${w}</label>`).join('')}
+                    </div>
+                    <button type="button" class="btn-cert" onclick="generateCertificate()">📄 Создать Паспорт эпохи</button>
+                </form>
+                <div id="certificate-area"></div>
+                <button class="btn-restart" onclick="resetGame()">🔄 Начать заново</button>
+            </div>
+        `;
+        container.innerHTML = html;
+        soundFinish();
+        updateUI();
+    }
+
+    function generateCertificate() {
+        const checkboxes = document.querySelectorAll('input[name="word"]:checked');
+        const selected = Array.from(checkboxes).map(cb => cb.value);
+        if (selected.length !== 5) {
+            alert('Пожалуйста, выберите ровно 5 слов.');
+            return;
+        }
+        const listHtml = selected.map(w => `<li>📖 ${w}</li>`).join('');
+        const certHtml = `
+            <div id="certificate">
+                <h2>📜 Паспорт эпохи</h2>
+                <p style="text-align:center; font-size:17px; color:var(--text-secondary);">
+                    Игрок <strong>${state.playerName}</strong> запомнил и записал следующие слова из «Евгения Онегина»:
+                </p>
+                <ul>${listHtml}</ul>
+                <p style="text-align:right; margin-top:16px; color:var(--footer-text);">
+                    <em>Создано в игре «Паспорт эпохи» (разработчик: Светлая Полина)</em>
+                </p>
+            </div>
+        `;
+        const area = document.getElementById('certificate-area');
+        area.innerHTML = certHtml;
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'btn-cert';
+        saveBtn.textContent = '💾 Скачать как PNG';
+        saveBtn.onclick = function() {
+            const el = document.getElementById('certificate');
+            html2canvas(el, {
+                scale: 2,
+                backgroundColor: '#fcf8f0',
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'pasport_epochi.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        };
+        area.appendChild(saveBtn);
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 9. СБРОС
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    function resetGame() {
+        state.currentTask = 0;
+        state.score = 0;
+        state.correctCount = 0;
+        state.wrongCount = 0;
+        state.matchPairs = [];
+        state.matchSelected = null;
+        state.taskCompleted = false;
+        state.gameStarted = true;
+        updateUI();
+        render();
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 10. СТАРТ
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    const loaded = loadState();
+    if (loaded && state.gameStarted && state.playerName) {
+        updateUI();
+        render();
+    } else {
+        showStartScreen();
+    }
+    document.getElementById('footerYear').textContent = new Date().getFullYear();
+    setInterval(saveState, 5000);
+</script>
+</body>
+</html>
